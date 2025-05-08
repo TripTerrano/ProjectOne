@@ -1,12 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <link defer src = "css/style.css">
-</head>
-<body>
-    
-</body>
+    <script src="app.js"></script>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Five Assassins</h1>
+      <p>The ONLY Card Game Wanted by Interpol</p>
+      <button id="myButton" onclick="test()">Click Me!</button>
+    </div>
+    <div id="root"></div>
+    <script>
+      const root = document.getElementById("root");
+      const el = document.createElement("div");
+      //   el.innerHTML = "<h1>Hello World</h1>";
+      //   root.appendChild(el);
+
+      //   const cardsEl = deck.map((card, idx) => {
+      //     const cardEl = document.createElement("div");
+      //     cardEl.className = "card";
+      //     cardEl.innerHTML = `${idx + 1} ${card.rank} of ${card.suit}`;
+      //     return cardEl;
+      //   });
+      //   cardsEl.forEach((cardEl) => {
+      //     root.appendChild(cardEl);
+      //   });
+      function makeCardEl(card) {
+        const cardEl = document.createElement("div");
+        cardEl.className = `card ${card.suit}`;
+        // cardEl.style.backgroundColor = card.suit;
+        cardEl.innerHTML = `${card.rank} of ${card.suit}`;
+        return cardEl;
+      }
+      function makePlayerEl(player) {
+        const playerEl = document.createElement("div");
+        playerEl.className = "player";
+        playerEl.innerHTML = `<h2>${player.name}</h2>`;
+        const cardsEl = player.hand.map(makeCardEl);
+        cardsEl.forEach((cardEl) => {
+          playerEl.appendChild(cardEl);
+        });
+        return playerEl;
+      }
+      function makeGameEl() {
+        const gameEl = document.createElement("div");
+        gameEl.className = "game";
+        const playersEl = players.map(makePlayerEl);
+        playersEl.forEach((playerEl) => {
+          gameEl.appendChild(playerEl);
+        });
+        return gameEl;
+      }
+      dealCards(deck, players, 3);
+      const gameEl = makeGameEl();
+      root.appendChild(gameEl);
+    </script>
+  </body>
 </html>

@@ -1,0 +1,30 @@
+.green {
+  background-color: green;
+}
+.red {
+  background-color: red;
+}
+.blue {
+  background-color: blue;
+}
+.yellow {
+  background-color: yellow;
+}
+.pink {
+  background-color: pink;
+}
+.wild {
+  background-color: purple;
+}
+.card {
+  height: 100px;
+  width: 100px;
+  display: inline-block;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 5px;
+}
+body {
+  font-family: Arial, sans-serif;
+}
