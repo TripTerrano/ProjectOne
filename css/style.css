@@ -17,14 +17,44 @@
   background-color: purple;
 }
 .card {
+  position: relative;
   height: 100px;
-  width: 100px;
-  display: inline-block;
+  width: 75px;
+
   border: 1px solid #ccc;
   padding: 10px;
   margin: 10px;
   border-radius: 5px;
 }
+.circle {
+  z-index: 3;
+  position: absolute;
+  left: 25px;
+  top: 40px;
+
+  border-radius: 50%;
+  height: 50px;
+  width: 50px;
+}
+.art {
+  position: absolute;
+  left: 12%;
+  top: 12%;
+  z-index: 20;
+  height: 100px;
+  width: 75px;
+  object-fit: contain;
+}
 body {
   font-family: Arial, sans-serif;
+}
+.player-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.card-piles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
 }

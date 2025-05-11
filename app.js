@@ -1,3 +1,14 @@
+// state of ggame play
+
+let deck = [];
+const players = [];
+let currentRound = 3;
+let currentPlayer = 0;
+const discardPile = [];
+const scoreBoard = [];
+let playMode = "play";
+let isGameOver = false;
+
 //function main() {
 // This is a simple card game setup in JavaScript.
 // The game involves creating a deck of cards, shuffling it, and dealing cards to players.
@@ -17,21 +28,22 @@ function makeCard(suit, value) {
 // Create a deck of cards
 function makeDeck() {
   const suits = ["blue", "green", "red", "yellow", "pink"];
-  const deck = [];
+  const d = [];
   for (let i = 0; i < suits.length; i++) {
     for (let j = 3; j <= 13; j++) {
-      deck.push(makeCard(suits[i], j));
+      d.push(makeCard(suits[i], j));
     }
   }
 
   // Add wild cards
   // create a double deck
   // and assign an id to each card
-  const doubleDeck = deck.concat(deck);
+  const doubleDeck = d.concat(d);
   const wildCard = makeCard("wild", 0);
   for (let i = 0; i < 6; i++) {
     doubleDeck.push(wildCard);
   }
+
   return doubleDeck.map((card, index) => {
     return {
       ...card,
@@ -39,25 +51,38 @@ function makeDeck() {
     };
   });
 }
-const deck = makeDeck();
 
-console.log(deck.length);
-console.log(JSON.stringify(deck, null, 2));
 // Shuffle the deck
 // and assign an id to each card
 // and add 6 wild cards
 // and assign an id to each card
-function shuffleDeck(deck) {
-  for (let i = deck.length - 1; i > 0; i--) {
+function shuffleDeck(d) {
+  for (let i = d.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [deck[i], deck[j]] = [deck[j], deck[i]];
+    [d[i], d[j]] = [d[j], d[i]];
   }
-  return deck;
-}
-const sDeck = shuffleDeck(deck);
 
-const players = [];
-// Create players
+  return d;
+}
+
+function setPlayerScore(playerIdx, score) {
+  if (scoreBoard[playerIdx]) {
+    scoreBoard[playerIdx].push(score);
+  } else {
+    scoreBoard[playerIdx] = [score];
+  }
+}
+function getPlayerTotal(playerIdx) {
+  let total = 0;
+  if (scoreBoard[playerIdx]) {
+    for (let i = 0; i < scoreBoard[playerIdx].length; i++) {
+      total += scoreBoard[playerIdx][i];
+    }
+  }
+  return total;
+}
+
+// Create playersc
 function makePlayer(name) {
   return {
     name: name,
@@ -69,30 +94,123 @@ function addPlayer(name) {
   const player = makePlayer(name);
   players.push(player);
 }
-function dealCards(deck, players, round) {
+function dealCards() {
   for (let i = 0; i < players.length; i++) {
-    players[i].hand = deck.splice(0, round);
+    players[i].hand = deck.splice(0, currentRound);
   }
 }
-// Add players
-addPlayer("Alice");
-addPlayer("Bob");
-addPlayer("Charlie");
-addPlayer("David");
+function checkGameOver() {}
+// Check if the game is over
 
-// deal cards
-// dealCards(sDeck, players, 7);
+function checkRoundEnd() {}
+// Check if the round has ended
+function drawCard(deck) {}
+function discard(player, card) {}
+function initGame() {
+  // Initialize the game
+  deck = makeDeck();
+  shuffleDeck(deck);
+  players.length = 0;
+  discardPile.length = 0;
+  scoreBoard.length = 0;
+  currentRound = 3;
+  currentPlayer = 0;
+  playMode = "play";
+  isGameOver = false;
 
-console.log(players);
-console.log(sDeck.length);
-//}
-// main();
-function test() {
-  const deck = makeDeck();
-  console.log(deck.length);
-  console.log(JSON.stringify(deck, null, 2));
-  const sDeck = shuffleDeck(deck);
-  console.log(sDeck.length);
-  console.log(JSON.stringify(sDeck, null, 2));
-  console.log("test");
+  // Add players
+  addPlayer("Player1");
+  addPlayer("Player2");
+  addPlayer("Player3");
+  addPlayer("Player4");
+
+  // Deal cards to players
+  dealCards();
+  const c = deck.pop();
+  discardPile.push(c);
 }
+
+const myCards = ["red", "green", "blue", "yellow"];
+const myBooks = [[0, 1], [3]];
+
+function validateRunTest(bookCards) {
+  let isValid = true;
+  if (bookCards.length < 3) {
+    return false;
+  }
+  const sortedCards = bookCards.sort((a, b) => {
+    return a.value - b.value;
+  });
+  let testSuit = sortedCards[0].suit;
+  sortedCards.forEach((card, idx) => {
+    if (isValid === false) return;
+    const isWildCard = card.suit === "wild" || card.value === currentRound;
+    if (!isWildCard) {
+      testSuit = card.suit;
+    }
+
+    if (card.suit !== testSuit) {
+      isValid = false;
+      return;
+    }
+
+    if (idx > 0) {
+      const prevCard = sortedCards[idx - 1];
+      if (card.value !== prevCard.value + 1) {
+        isValid = false;
+        return;
+      }
+    }
+
+    return isValid;
+  });
+}
+
+function validateBookTest(bookCards) {
+  let isValid = true;
+  if (bookCards.length < 3) {
+    return false;
+  }
+
+  let testValue = bookCards[0].value;
+  let hasSeenWildCard = false;
+  bookCards.forEach((card, idx) => {
+    if (isValid === false) return;
+    const isWildCard = card.suit === "wild" || card.value === currentRound;
+    if (!isWildCard && !hasSeenWildCard) {
+      testValue = card.value;
+    }
+    if (isWildCard) {
+      hasSeenWildCard = true;
+    }
+
+    console.log("testValue", testValue);
+    console.log("card", card);
+
+    console.log("isWildCard", isWildCard);
+
+    if (card.value !== testValue && !isWildCard) {
+      isValid = false;
+      console.log("isValid", isValid);
+      return;
+    }
+  });
+  return isValid;
+}
+
+initGame();
+
+const t1 = validateBookTest([
+  { suit: "red", value: 3 },
+  { suit: "red", value: 3 },
+  { suit: "red", value: 3 },
+  { suit: "wild", value: 0 },
+]);
+const t2 = validateBookTest([
+  { suit: "red", value: 3 },
+  { suit: "red", value: 3 },
+  { suit: "red", value: 4 },
+  { suit: "wild", value: 0 },
+]);
+console.log("t1", t1);
+console.log("t2", t2);

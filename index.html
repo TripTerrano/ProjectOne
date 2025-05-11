@@ -31,31 +31,79 @@
       //   });
       function makeCardEl(card) {
         const cardEl = document.createElement("div");
-        cardEl.className = `card ${card.suit}`;
-        // cardEl.style.backgroundColor = card.suit;
-        cardEl.innerHTML = `${card.rank} of ${card.suit}`;
+        cardEl.className = `card`;
+        const assassinEl = document.createElement("img");
+        assassinEl.className = `art`;
+        assassinEl.src = `assets/images/${card.suit}.png`;
+        if (card.suit !== "wild") {
+          const circleEl = document.createElement("div");
+          circleEl.className = `circle ${card.suit}`;
+          cardEl.appendChild(circleEl);
+          const rankEl = document.createElement("div");
+          rankEl.className = "rank";
+          rankEl.innerHTML = card.rank;
+          cardEl.appendChild(rankEl);
+        }
+
+        cardEl.appendChild(assassinEl);
         return cardEl;
       }
       function makePlayerEl(player) {
         const playerEl = document.createElement("div");
         playerEl.className = "player";
         playerEl.innerHTML = `<h2>${player.name}</h2>`;
+        playerCardsEl = document.createElement("div");
+        playerCardsEl.className = "player-cards";
         const cardsEl = player.hand.map(makeCardEl);
         cardsEl.forEach((cardEl) => {
-          playerEl.appendChild(cardEl);
+          playerCardsEl.appendChild(cardEl);
         });
+        playerEl.appendChild(playerCardsEl);
         return playerEl;
       }
+
+      function makeCardPilesEl() {
+        const cardPilesEl = document.createElement("div");
+        cardPilesEl.className = "card-piles";
+        const discardCard = discardPile[discardPile.length - 1];
+        const discardCardEl = makeCardEl(discardCard);
+        const deckCard = deck[deck.length - 1];
+        const deckCardEl = makeCardEl(deckCard);
+        cardPilesEl.appendChild(discardCardEl);
+        cardPilesEl.appendChild(deckCardEl);
+        return cardPilesEl;
+      }
+
+      function makeScoreBoardEl() {
+        const scoreBoardEl = document.createElement("div");
+        scoreBoardEl.className = "score-board";
+        players.forEach((player, idx) => {
+          const playerScoreEl = document.createElement("div");
+          playerScoreEl.className = "player-score";
+          playerScoreEl.innerHTML = `<h2>${player.name}</h2>`;
+          const scoreEl = document.createElement("div");
+          scoreEl.className = "score";
+          scoreEl.innerHTML = `${getPlayerTotal(idx)}`;
+          playerScoreEl.appendChild(scoreEl);
+          scoreBoardEl.appendChild(playerScoreEl);
+        });
+        return scoreBoardEl;
+      }
+      //------
       function makeGameEl() {
         const gameEl = document.createElement("div");
         gameEl.className = "game";
+        const scoreBoardEl = makeScoreBoardEl();
+        gameEl.appendChild(scoreBoardEl);
+
+        const pilesEl = makeCardPilesEl();
+        gameEl.appendChild(pilesEl);
         const playersEl = players.map(makePlayerEl);
         playersEl.forEach((playerEl) => {
           gameEl.appendChild(playerEl);
         });
         return gameEl;
       }
-      dealCards(deck, players, 3);
       const gameEl = makeGameEl();
       root.appendChild(gameEl);
     </script>
