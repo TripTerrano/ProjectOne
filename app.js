@@ -87,6 +87,7 @@ function makePlayer(name) {
   return {
     name: name,
     hand: [],
+    books: [[], [], [], [], [], []],
   };
 }
 // Add players
@@ -130,87 +131,82 @@ function initGame() {
   discardPile.push(c);
 }
 
-const myCards = ["red", "green", "blue", "yellow"];
-const myBooks = [[0, 1], [3]];
+// POTENTIAL book validation
+function validateBook(bookCards, wildValue = currentRound) {
+  if (bookCards.length < 3) return false;
 
-function validateRunTest(bookCards) {
-  let isValid = true;
-  if (bookCards.length < 3) {
-    return false;
-  }
-  const sortedCards = bookCards.sort((a, b) => {
-    return a.value - b.value;
-  });
-  let testSuit = sortedCards[0].suit;
-  sortedCards.forEach((card, idx) => {
-    if (isValid === false) return;
-    const isWildCard = card.suit === "wild" || card.value === currentRound;
-    if (!isWildCard) {
-      testSuit = card.suit;
-    }
-
-    if (card.suit !== testSuit) {
-      isValid = false;
-      return;
-    }
-
-    if (idx > 0) {
-      const prevCard = sortedCards[idx - 1];
-      if (card.value !== prevCard.value + 1) {
-        isValid = false;
-        return;
+  let targetValue = null;
+  for (const card of bookCards) {
+    if (!isWildCard(card, wildValue)) {
+      if (!targetValue) {
+        targetValue = card.value;
+      } else if (card.value !== targetValue) {
+        return false;
       }
     }
-
-    return isValid;
-  });
+  }
+  return true;
 }
 
-function validateBookTest(bookCards) {
-  let isValid = true;
-  if (bookCards.length < 3) {
-    return false;
+// POTENTIAL run validation
+function validateRun(runCards, wildValue = currentRound) {
+  if (runCards.length < 3) return false;
+
+  const sorted = [...runCards]
+    .filter((card) => !isWildCard(card, wildValue))
+    .sort((a, b) => a.value - b.value);
+  let suit = null;
+  let expectedValue = null;
+  let wildCount = runCards.length - sorted.length;
+
+  for (let i = 0; i < sorted.length; i++) {
+    const card = sorted[i];
+
+    if (suit === null) {
+      suit = card.suit;
+    }
+    if (expectedValue === null) {
+      expectedValue = card.value;
+    }
+    if (card.suit !== suit) {
+      return false;
+    }
+
+    if (card.value !== expectedValue) {
+      if (wildCount > 0) {
+        wildCount--;
+        expectedValue++;
+      } else {
+        return false;
+      }
+    }
+    expectedValue++;
   }
+  return true;
+}
 
-  let testValue = bookCards[0].value;
-  let hasSeenWildCard = false;
-  bookCards.forEach((card, idx) => {
-    if (isValid === false) return;
-    const isWildCard = card.suit === "wild" || card.value === currentRound;
-    if (!isWildCard && !hasSeenWildCard) {
-      testValue = card.value;
-    }
-    if (isWildCard) {
-      hasSeenWildCard = true;
-    }
-
-    console.log("testValue", testValue);
-    console.log("card", card);
-
-    console.log("isWildCard", isWildCard);
-
-    if (card.value !== testValue && !isWildCard) {
-      isValid = false;
-      console.log("isValid", isValid);
-      return;
-    }
-  });
-  return isValid;
+function isWildCard(card, wildValue) {
+  return card.suit === "wild" || card.value === wildValue;
 }
 
 initGame();
 
-const t1 = validateBookTest([
-  { suit: "red", value: 3 },
-  { suit: "red", value: 3 },
-  { suit: "red", value: 3 },
-  { suit: "wild", value: 0 },
-]);
-const t2 = validateBookTest([
-  { suit: "red", value: 3 },
-  { suit: "red", value: 3 },
-  { suit: "red", value: 4 },
-  { suit: "wild", value: 0 },
-]);
-console.log("t1", t1);
-console.log("t2", t2);
+const myCards = ["red", "green", "blue", "yellow"];
+const myBooks = [[0, 1], [3]];
+function movePlayerCards(player, cardIds, destination) {
+  const cardsIdx = cardIds.map((id) =>
+    player.hand.findIndex((card) => card.id === id)
+  );
+
+  player.books = player.books.map((book, bookIdx) => {
+    if (destination === bookIdx) {
+      cardsIdx.forEach((idx) => {
+        if (!book.includes(idx)) {
+          book.push(idx);
+        }
+      });
+      return book;
+    }
+    return book.filter((idx) => !cardsIdx.includes(idx));
+  });
+}
