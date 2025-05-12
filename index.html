@@ -11,27 +11,31 @@
     <div class="container">
       <h1>Five Assassins</h1>
       <p>The ONLY Card Game Wanted by Interpol</p>
-      <button id="myButton" onclick="test()">Click Me!</button>
     </div>
+
     <div id="root"></div>
     <script>
       const root = document.getElementById("root");
       const el = document.createElement("div");
-      //   el.innerHTML = "<h1>Hello World</h1>";
-      //   root.appendChild(el);
 
-      //   const cardsEl = deck.map((card, idx) => {
-      //     const cardEl = document.createElement("div");
-      //     cardEl.className = "card";
-      //     cardEl.innerHTML = `${idx + 1} ${card.rank} of ${card.suit}`;
-      //     return cardEl;
-      //   });
-      //   cardsEl.forEach((cardEl) => {
-      //     root.appendChild(cardEl);
-      //   });
-      function makeCardEl(card) {
+      function makeCardEl(card, onClick, isFaceDown) {
         const cardEl = document.createElement("div");
+        cardEl.id = card.id;
+        if (isFaceDown) {
+          cardEl.className = `card face-down`;
+          cardEl.innerHTML = `<img class="art" src="assets/images/back.png" />`;
+          return cardEl;
+        }
+        console.log(card);
+        console.log(onClick);
+        console.log(isFaceDown);
         cardEl.className = `card`;
+        if (onClick) {
+          cardEl.addEventListener("click", (e) => {
+            onClick(card.id);
+          });
+        }
+
         const assassinEl = document.createElement("img");
         assassinEl.className = `art`;
         assassinEl.src = `assets/images/${card.suit}.png`;
@@ -51,24 +55,88 @@
       function makePlayerEl(player) {
         const playerEl = document.createElement("div");
         playerEl.className = "player";
+        playerEl.id = player.name;
         playerEl.innerHTML = `<h2>${player.name}</h2>`;
         playerCardsEl = document.createElement("div");
         playerCardsEl.className = "player-cards";
-        const cardsEl = player.hand.map(makeCardEl);
+        const cardsEl = player.hand.map((card) =>
+          makeCardEl(card, () => {
+            console.log(card.id);
+            handlePlayerDiscardCard(card.id);
+          })
+        );
         cardsEl.forEach((cardEl) => {
           playerCardsEl.appendChild(cardEl);
         });
         playerEl.appendChild(playerCardsEl);
         return playerEl;
       }
+      function handlePlayerDrawCard(d) {
+        const cPlayer = players[currentPlayer];
+
+        drawCard(d);
+        const playerEl = document.getElementById(cPlayer.name);
+        const playerCardsEl = playerEl.querySelector(".player-cards");
+        const cardsEl = cPlayer.hand.map((card) =>
+          makeCardEl(card, () => {
+            console.log(card.id);
+            handlePlayerDiscardCard(card.id);
+          })
+        );
+        playerCardsEl.innerHTML = "";
+        cardsEl.forEach((cardEl) => {
+          playerCardsEl.appendChild(cardEl);
+        });
+        const cardPilesEl = document.getElementById("card-piles");
+        const discardCard = discardPile[discardPile.length - 1];
+        const discardCardEl = makeCardEl(discardCard, () =>
+          handlePlayerDrawCard(discardPile)
+        );
+        const deckCard = deck[deck.length - 1];
+        const deckCardEl = makeCardEl(
+          deckCard,
+          () => handlePlayerDrawCard(deck),
+          true
+        );
+
+        cardPilesEl.innerHTML = "";
+        cardPilesEl.appendChild(discardCardEl);
+        cardPilesEl.appendChild(deckCardEl);
+      }
+      function handlePlayerDiscardCard(cardId) {
+        console.log(cardId);
+        const cPlayer = players[currentPlayer];
+        discardCard(cardId);
+        const playerEl = document.getElementById(cPlayer.name);
+        const playerCardsEl = playerEl.querySelector(".player-cards");
+        const cardsEl = cPlayer.hand.map((card) =>
+          makeCardEl(card, () => {
+            console.log(card.id);
+            handlePlayerDiscardCard(card.id);
+          })
+        );
+        playerCardsEl.innerHTML = "";
+        cardsEl.forEach((cardEl) => {
+          playerCardsEl.appendChild(cardEl);
+        });
+        const cardPilesEl = document.getElementById("card-piles");
+      }
 
       function makeCardPilesEl() {
         const cardPilesEl = document.createElement("div");
+        cardPilesEl.id = "card-piles";
         cardPilesEl.className = "card-piles";
         const discardCard = discardPile[discardPile.length - 1];
-        const discardCardEl = makeCardEl(discardCard);
+        const discardCardEl = makeCardEl(discardCard, () =>
+          handlePlayerDrawCard(discardPile)
+        );
         const deckCard = deck[deck.length - 1];
-        const deckCardEl = makeCardEl(deckCard);
+        const deckCardEl = makeCardEl(
+          deckCard,
+          () => handlePlayerDrawCard(deck),
+          true
+        );
+
         cardPilesEl.appendChild(discardCardEl);
         cardPilesEl.appendChild(deckCardEl);
         return cardPilesEl;
@@ -102,19 +170,58 @@
         playersEl.forEach((playerEl) => {
           gameEl.appendChild(playerEl);
         });
+
         return gameEl;
       }
+      // const gameEl = makeGameEl();
+      // root.appendChild(gameEl);
+      function makeInputEl(id) {
+        const inputFieldEl = document.createElement("input");
+        inputFieldEl.type = "text";
+        inputFieldEl.placeholder = "Enter your name";
+        inputFieldEl.className = "input-field";
+        inputFieldEl.id = id;
+        return inputFieldEl;
+      }
+      function makeOnboardEl() {
+        const onBoardEl = document.createElement("div");
+
+        onBoardEl.className = "on-board";
+        const formEl = document.createElement("form");
+        formEl.className = "form";
+        formEl.id = "form";
+        const inputFieldEl = makeInputEl("p1");
+        const inputField2El = makeInputEl("p2");
+        const submitButtonEl = document.createElement("button");
+        submitButtonEl.type = "submit";
+        submitButtonEl.innerHTML = "Start Game";
+        formEl.appendChild(inputFieldEl);
+        formEl.appendChild(inputField2El);
+        formEl.appendChild(submitButtonEl);
+        onBoardEl.appendChild(formEl);
+        return onBoardEl;
+      }
+      // root.appendChild(makeOnboardEl());
+      // const form = document.getElementById("form");
+      // form.addEventListener("submit", (e) => {
+      //   e.preventDefault();
+      //   const player1Name = document.getElementById("p1").value;
+      //   const player2Name = document.getElementById("p2").value;
+      //   addPlayer(player1Name);
+      //   addPlayer(player2Name);
+      //   const rootEl = document.getElementById("root");
+      //   const gameEl = makeGameEl();
+      //   rootEl.innerHTML = "";
+      //   rootEl.appendChild(gameEl);
+      // });
+      initGame();
+      addPlayer("Player 1");
+      addPlayer("Player 2");
+      initRound(3);
+      const rootEl = document.getElementById("root");
       const gameEl = makeGameEl();
-      root.appendChild(gameEl);
+      rootEl.innerHTML = "";
+      rootEl.appendChild(gameEl);
     </script>
   </body>
 </html>
-
-//game controls section
-<div class="game-controls">
-  <button id="draw-card">Draw</button>
-  <button id="end-turn">End Turn</button>
-</div>
-
-//player turn indicator
-<div id="turn-indicator"></div>

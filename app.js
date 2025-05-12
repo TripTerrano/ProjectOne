@@ -1,4 +1,4 @@
-// state of ggame play
+// state of game play
 
 let deck = [];
 const players = [];
@@ -105,8 +105,52 @@ function checkGameOver() {}
 
 function checkRoundEnd() {}
 // Check if the round has ended
-function drawCard(deck) {}
-function discard(player, card) {}
+function drawCard(d) {
+  const player = players[currentPlayer];
+  if (player.hand.length > currentRound) {
+    return;
+  }
+  const card = d.pop();
+  if (card) {
+    player.hand.push(card);
+  }
+}
+function discardCard(cardId) {
+  const player = players[currentPlayer];
+  if (player.hand.length > currentRound) {
+    return;
+  }
+  const cardIdx = player.hand.findIndex((card) => card.id === cardId);
+  const card = player.hand[cardIdx];
+  players.books.map((book) => {
+    book
+      .filter((idx) => idx === cardIdx)
+      .map((idx) => {
+        if (idx < cardIdx) {
+          return idx;
+        }
+        return idx - 1;
+      });
+  });
+  if (card) {
+    player.hand.splice(cardIdx, 1);
+    discardPile.push(card);
+  }
+}
+
+function initRound(r) {
+  // Initialize the round
+  currentRound = r;
+  currentPlayer = 0;
+  playMode = "play";
+  isGameOver = false;
+
+  // Deal cards to players
+  dealCards();
+  const c = deck.pop();
+  discardPile.push(c);
+}
+
 function initGame() {
   // Initialize the game
   deck = makeDeck();
@@ -114,21 +158,12 @@ function initGame() {
   players.length = 0;
   discardPile.length = 0;
   scoreBoard.length = 0;
-  currentRound = 3;
+
   currentPlayer = 0;
   playMode = "play";
   isGameOver = false;
 
-  // Add players
-  addPlayer("Player1");
-  addPlayer("Player2");
-  addPlayer("Player3");
-  addPlayer("Player4");
-
-  // Deal cards to players
-  dealCards();
-  const c = deck.pop();
-  discardPile.push(c);
+  initRound(3);
 }
 
 // POTENTIAL book validation
@@ -189,10 +224,6 @@ function isWildCard(card, wildValue) {
   return card.suit === "wild" || card.value === wildValue;
 }
 
-initGame();
-
-const myCards = ["red", "green", "blue", "yellow"];
-const myBooks = [[0, 1], [3]];
 function movePlayerCards(player, cardIds, destination) {
   const cardsIdx = cardIds.map((id) =>
     player.hand.findIndex((card) => card.id === id)
